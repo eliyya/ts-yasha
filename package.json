@@ -1,49 +1,30 @@
 {
-	"main": "lib/src/index.js",
+	"main": "index.js",
+	"types": "index.d.ts",
 	"name": "yasha",
-	"version": "3.0.0",
-	"types": "types",
-	"type": "module",
-	"description": "A fork of yasha module rewritten in TypeScript",
+	"version": "3.1.0",
 	"dependencies": {
 		"@discordjs/voice": "github:davidzeng0/voice#dist",
-		"@typescript-eslint/parser": "^5.62.0",
-		"discord.js": "14.11.0",
-		"eslint": "^8.45.0",
+		"discord.js": "^14.11.0",
 		"google-protobuf": "^3.21.2",
-		"protoc-gen-ts": "^0.8.6",
+		"js-common": "github:davidzeng0/js-common#dist",
+		"node-fetch": "^2.6.6",
 		"sange": "github:davidzeng0/sange",
-		"sodium": "3.0.2"
+		"sodium": "github:davidzeng0/sodium#dist"
 	},
 	"scripts": {
-		"proto": "mkdir -p src/proto/build; protoc --proto_path=src/proto --ts_out=src/proto/build --ts_opt=target=node yt.proto",
-		"install": "npm run proto",
+		"proto": "mkdir -p build; protoc --proto_path=proto --js_out=import_style=commonjs,binary:build youtube.proto",
+		"prepare": "npm run proto",
 		"build": "npm run proto",
-		"type": "tsc || rm -r tmp"
+		"git-publish": "git-publish -b dist"
 	},
 	"devDependencies": {
-		"@types/google-protobuf": "^3.15.6",
-		"ts-standard": "^12.0.2",
-		"typescript": "^5.1.6"
+		"git-publish": "^2.0.0"
 	},
-	"eslintConfig": {
-		"extends": "./node_modules/ts-standard/eslintrc.json",
-		"parserOptions": {
-			"project": "./tsconfig.json"
-		},
-		"rules": {
-			"@typescript-eslint/indent": [
-				"error",
-				4
-			],
-			"@typescript-eslint/strict-boolean-expressions": "off",
-			"@typescript-eslint/comma-dangle": [
-				"error",
-				"always-multiline"
-			]
-		},
-		"ignorePatterns": [
-			"src/proto/build"
-		]
-	}
+	"files": [
+		"src",
+		"build",
+		"proto",
+		"index.d.ts"
+	]
 }

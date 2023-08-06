@@ -1,12 +1,11 @@
 const EventEmitter = require('events');
 
-const VoiceConnection = require('./VoiceConnection.cjs');
-// @ts-ignore
+const VoiceConnection = require('./VoiceConnection');
 const AudioPlayer = require('sange');
 
-		// @ts-ignore
 const sodium = require('sodium');
-const { TrackStream, TrackStreams } = require('./Track.cjs');
+const {UnsupportedError, GenericError, InternalError} = require('js-common');
+const {UnplayableError} = require('./Error');
 
 const random_bytes = Buffer.alloc(24);
 const connection_nonce = Buffer.alloc(24);
@@ -31,51 +30,18 @@ const EncryptionMode = {
 };
 
 class Subscription{
-	/**
-	 * @param {VoiceConnection} connection
-	 * @param {TrackPlayer} player
-	 */
 	constructor(connection, player){
 		this.connection = connection;
 		this.player = player;
 	}
 
 	unsubscribe(){
-		// @ts-ignore
 		this.connection.onSubscriptionRemoved(this);
 		this.player.unsubscribe(this);
 	}
 }
 
 class TrackPlayer extends EventEmitter{
-	/** @type {boolean} */
-	normalize_volume = false
-	/** @type {boolean} */
-	external_encrypt = false
-	/** @type {boolean} */
-	external_packet_send = false
-	/** @type {number} */
-	last_error = 0
-	/** @type {Awaited<ReturnType<typeof import('./Source.js').resolve>> | null} */
-	track
-	/** @type {unknown} */
-	stream
-	/** @type {Subscription[]} */
-	subscriptions
-	/** @type {number} */
-	play_id = 0
-	/** @type {number | null} */
-	silence_frames_interval = null
-	/** @type {number} */
-	silence_frames_left = 0
-	/** @type {boolean} */
-	silence_frames_needed = false
-	/** @type {AudioPlayer} */
-	player
-	/**
-	 * 
-	 * @param {{normalize_volume:boolean;external_encrypt:boolean;external_packet_send:boolean}} [options] 
-	 */
 	constructor(options){
 		super();
 
@@ -102,11 +68,6 @@ class TrackPlayer extends EventEmitter{
 		this.player = null;
 	}
 
-	/**
-	 * 
-	 * @param {*} old 
-	 * @param {*} cur 
-	 */
 	onstatechange(old, cur){
 		if(cur.status == VoiceConnection.Status.Ready)
 			this.init_secretbox();
@@ -114,15 +75,10 @@ class TrackPlayer extends EventEmitter{
 			this.player.ffplayer.pipe();
 	}
 
-	/**
-	 * 
-	 * @param {*} connection 
-	 * @returns {Subscription}
-	 */
 	subscribe(connection){
 		if(this.external_encrypt){
 			if(this.subscriptions.length)
-				throw new Error('Cannot subscribe to multiple connections when external encryption is enabled');
+				throw new UnsupportedError('Cannot subscribe to multiple connections when external encryption is enabled');
 			connection.on('stateChange', this.onstatechange);
 		}
 
@@ -135,11 +91,6 @@ class TrackPlayer extends EventEmitter{
 		return subscription;
 	}
 
-	/**
-	 * 
-	 * @param {Subscription} subscription 
-	 * @returns {void}
-	 */
 	unsubscribe(subscription){
 		var index = this.subscriptions.indexOf(subscription);
 
@@ -153,23 +104,14 @@ class TrackPlayer extends EventEmitter{
 			this.destroy();
 	}
 
-	/**
-	 * 
-	 */
 	unsubscribe_all(){
 		while(this.subscriptions.length)
 			this.subscriptions[0].unsubscribe();
 	}
 
-	/**
-	 * 
-	 * @param {*} packet 
-	 * @param {number} length 
-	 * @param {number} frame_size
-	 */
 	onpacket(packet, length, frame_size){
-		this.stop_silence_frames();
-
+		if(!this.isPaused())
+			this.stop_silence_frames();
 		packet = new Uint8Array(packet.buffer, 0, length);
 
 		if(!this.external_packet_send)
@@ -182,17 +124,9 @@ class TrackPlayer extends EventEmitter{
 		this.start_silence_frames();
 	}
 
-	/**
-	 * 
-	 * @param {*} error 
-	 * @param {*} code 
-	 * @param {*} retryable 
-	 * @returns {void}
-	 */
 	onerror(error, code, retryable){
 		if(this.error(error, retryable))
 			return;
-			// @ts-ignore
 		this.track.streams = null;
 		this.create_player(this.getTime());
 		this.start();
@@ -207,12 +141,10 @@ class TrackPlayer extends EventEmitter{
 	}
 
 	get_connection_data(){
-		// @ts-ignore
 		return this.get_connection().state.networking.state.connectionData;
 	}
 
 	get_connection_udp(){
-		// @ts-ignore
 		return this.get_connection().state.networking.state.udp;
 	}
 
@@ -249,7 +181,7 @@ class TrackPlayer extends EventEmitter{
 					this.player.ffplayer.pipe(udp.remote.ip, udp.remote.port);
 			}catch(e){
 				this.cleanup();
-				this.emit('error', e);
+				this.emit('error', new GenericError(e));
 
 				return;
 			}
@@ -263,31 +195,24 @@ class TrackPlayer extends EventEmitter{
 			this.player.ffplayer.setSecretBox(new Uint8Array(32), 0, 0);
 		}catch(e){
 			this.cleanup();
-			this.emit('error', e);
+			this.emit('error', new GenericError(e));
 		}
 
 		if(this.external_packet_send)
 			this.player.ffplayer.pipe();
 	}
 
-	/**
-	 * 
-	 * @param {number} start_time 
-	 * @returns 
-	 */
 	create_player(start_time){
 		this.destroy_player();
 
-		// @ts-ignore
 		if(this.track.player){
-			// @ts-ignore
 			this.player = new this.track.player(this.external_encrypt ? new Uint8Array(4096) : audio_output, false);
 			this.player.setTrack(this.track);
 		}else{
 			try{
 				this.player = new AudioPlayer(this.external_encrypt ? new Uint8Array(4096) : audio_output, false);
 			}catch(e){
-				this.emit('error', e);
+				this.emit('error', new GenericError(e));
 
 				return;
 			}
@@ -309,13 +234,10 @@ class TrackPlayer extends EventEmitter{
 	async load_streams(){
 		var streams, play_id = this.play_id;
 
-		// @ts-ignore
 		if(this.track.streams && !this.track.streams.expired())
-		// @ts-ignore
 			streams = this.track.streams;
 		else{
 			try{
-				// @ts-ignore
 				streams = await this.track.getStreams();
 			}catch(error){
 				if(this.play_id == play_id)
@@ -325,22 +247,19 @@ class TrackPlayer extends EventEmitter{
 
 			if(this.play_id != play_id)
 				return false;
-				// @ts-ignore
 			this.track.streams = streams;
 		}
 
 		this.stream = this.get_best_stream(streams);
 
 		if(!this.stream){
-			this.emit('error', new Error('No streams found'));
+			this.emit('error', new UnplayableError('No streams found'));
 
 			return false;
 		}
 
-		// @ts-ignore
 		if(!this.stream.url){
 			try{
-				// @ts-ignore
 				this.stream.url = await this.stream.getUrl();
 			}catch(error){
 				if(this.play_id == play_id)
@@ -354,12 +273,7 @@ class TrackPlayer extends EventEmitter{
 
 		return true;
 	}
-	/**
-	 * 
-	 * @param {Buffer} buffer 
-	 * @param {number} [frame_size] 
-	 * @param {boolean} [is_silence] 
-	 */
+
 	send(buffer, frame_size, is_silence){
 		var subscriptions = this.subscriptions, connection;
 
@@ -370,7 +284,6 @@ class TrackPlayer extends EventEmitter{
 				continue;
 			connection.setSpeaking(true);
 
-			// @ts-ignore
 			var state = connection.state.networking.state,
 				connection_data = state.connectionData,
 				mode = connection_data.encryption_mode;
@@ -410,37 +323,42 @@ class TrackPlayer extends EventEmitter{
 			audio_buffer.writeUIntBE(connection_data.timestamp, 4, 4);
 			audio_buffer.writeUIntBE(connection_data.ssrc, 8, 4);
 
-			var len, buf;
+			var len = 12; /* header length */
 
 			switch(mode){
 				case EncryptionMode.LITE:
-					len = 16;
 					connection_data.nonce++;
 
 					if(connection_data.nonce > 4294967295)
 						connection_data.nonce = 0;
 					connection_nonce.writeUInt32BE(connection_data.nonce, 0);
-					buf = sodium.api.crypto_secretbox_easy(buffer, connection_nonce, connection_data.secretKey);
-					audio_buffer.set(connection_nonce.slice(0, 4), 12 + buf.length);
+
+					len += sodium.crypto_secretbox_easy(audio_buffer.subarray(12), buffer, connection_nonce, connection_data.secretKey);
+
+					audio_buffer.set(connection_nonce.subarray(0, 4), len);
+
+					len += 4;
 
 					break;
 				case EncryptionMode.SUFFIX:
-					len = 36;
-					sodium.api.randombytes_buf(random_bytes);
-					buf = sodium.api.crypto_secretbox_easy(buffer, random_bytes, connection_data.secretKey);
-					audio_buffer.set(random_bytes, 12 + buf.length);
+					sodium.randombytes_buf(random_bytes);
+
+					len += sodium.crypto_secretbox_easy(audio_buffer.subarray(12), buffer, random_bytes, connection_data.secretKey);
+
+					audio_buffer.set(random_bytes, len);
+
+					len += 24;
 
 					break;
 				case EncryptionMode.DEFAULT:
-					len = 12;
 					audio_buffer.copy(audio_nonce, 0, 0, 12);
-					buf = sodium.api.crypto_secretbox_easy(buffer, audio_nonce, connection_data.secretKey);
+
+					len += sodium.crypto_secretbox_easy(audio_buffer.subarray(12), buffer, audio_nonce, connection_data.secretKey);
 
 					break;
 			}
 
-			audio_buffer.set(buf, 12);
-			state.udp.send(new Uint8Array(audio_buffer.buffer, 0, len + buf.length));
+			state.udp.send(audio_buffer.subarray(0, len));
 		}
 	}
 
@@ -458,7 +376,6 @@ class TrackPlayer extends EventEmitter{
 			data.sequence = box.sequence;
 		}
 
-		// @ts-ignore
 		this.silence_frames_interval = setInterval(() => {
 			this.silence_frames_left--;
 
@@ -472,7 +389,6 @@ class TrackPlayer extends EventEmitter{
 			}
 
 			if(!this.silence_frames_left){
-				// @ts-ignore
 				clearInterval(this.silence_frames_interval);
 
 				this.silence_frames_interval = null;
@@ -493,16 +409,10 @@ class TrackPlayer extends EventEmitter{
 		this.silence_frames_left = 5;
 	}
 
-	/**
-	 * 
-	 * @param {Error} error 
-	 * @param {boolean} [retryable] 
-	 * @returns 
-	 */
 	error(error, retryable){
 		if(!retryable || Date.now() - this.last_error < ERROR_INTERVAL){
 			this.destroy_player();
-			this.emit('error', error);
+			this.emit('error', new InternalError(error));
 
 			return true;
 		}
@@ -512,11 +422,6 @@ class TrackPlayer extends EventEmitter{
 		return false;
 	}
 
-	/**
-	 * 
-	 * @param {TrackStreams} streams 
-	 * @returns 
-	 */
 	get_best_stream_one(streams){
 		var opus = [], audio = [], other = [];
 
@@ -534,13 +439,10 @@ class TrackPlayer extends EventEmitter{
 		}
 
 		if(opus.length)
-		// @ts-ignore
 			streams = opus;
 		else if(audio.length)
-		// @ts-ignore
 			streams = audio;
 		else
-		// @ts-ignore
 			streams = other;
 		if(!streams.length)
 			return null;
@@ -549,65 +451,48 @@ class TrackPlayer extends EventEmitter{
 		});
 	}
 
-	/**
-	 * 
-	 * @param {TrackStream} streams 
-	 * @returns 
-	 */
 	get_best_stream(streams){
-		// @ts-ignore
 		var result, volume = streams.volume;
 
-		// @ts-ignore
 		streams = streams.filter((stream) => stream.audio);
-		// @ts-ignore
 		result = this.get_best_stream_one(streams.filter((stream) => stream.default_audio_track))
 
 		if(!result)
-		// @ts-ignore
 			result = this.get_best_stream_one(streams);
 		if(result)
 			result.volume = volume;
 		return result;
 	}
 
-	/**
-	 * 
-	 * @param {import('./Track.cjs').Track<any>} track 
-	 * @returns {void}
-	 */
 	play(track){
 		this.play_id++;
 		this.last_error = 0;
 
 		this.stream = null;
-		// @ts-ignore
 		this.track = track;
 
 		if(this.play_id > MAX_PLAY_ID)
 			this.play_id = 0;
-			// @ts-ignore
 		this.create_player();
 	}
 
 	async start(){
 		if(!await this.load_streams() || !this.player) /* destroy could have been called while waiting */
 			return;
-		if(this.normalize_volume)
-		// @ts-ignore
+		if(this.normalize_volume && this.stream.volume)
 			this.player.setVolume(this.stream.volume);
 		try{
-			// @ts-ignore
 			this.player.setURL(this.stream.url, this.stream.is_file);
-			this.player.start();
+
+			await this.player.start();
 		}catch(e){
-			this.emit('error', e);
+			this.emit('error', GenericError(e));
 		}
 	}
 
 	check_destroyed(){
 		if(!this.player)
-			throw new Error('Player was destroyed or nothing was playing');
+			throw new GenericError('Player was destroyed or nothing was playing');
 	}
 
 	hasPlayer(){
@@ -620,11 +505,6 @@ class TrackPlayer extends EventEmitter{
 		return this.player.isPaused();
 	}
 
-	/**
-	 * 
-	 * @param {boolean} paused 
-	 * @returns 
-	 */
 	setPaused(paused){
 		this.check_destroyed();
 
@@ -633,78 +513,42 @@ class TrackPlayer extends EventEmitter{
 		return this.player.setPaused(paused);
 	}
 
-	/**
-	 * 
-	 * @param {number} volume 
-	 * @returns 
-	 */
 	setVolume(volume){
 		this.check_destroyed();
 
 		return this.player.setVolume(volume);
 	}
 
-	/**
-	 * 
-	 * @param {number} bitrate 
-	 * @returns 
-	 */
 	setBitrate(bitrate){
 		this.check_destroyed();
 
 		return this.player.setBitrate(bitrate);
 	}
 
-	/**
-	 * 
-	 * @param {number} rate 
-	 * @returns 
-	 */
 	setRate(rate){
 		this.check_destroyed();
 
 		return this.player.setRate(rate);
 	}
 
-	/**
-	 * 
-	 * @param {*} tempo 
-	 * @returns 
-	 */
 	setTempo(tempo){
 		this.check_destroyed();
 
 		return this.player.setTempo(tempo);
 	}
 
-	/**
-	 * 
-	 * @param {*} depth 
-	 * @param {number} rate 
-	 * @returns 
-	 */
 	setTremolo(depth, rate){
 		this.check_destroyed();
 
 		return this.player.setTremolo(depth, rate);
 	}
 
-	/**
-	 * 
-	 * @param {*} eqs 
-	 * @returns 
-	 */
 	setEqualizer(eqs){
 		this.check_destroyed();
 
 		return this.player.setEqualizer(eqs);
 	}
 
-	/**
-	 * 
-	 * @param {number} time 
-	 * @returns 
-	 */
 	seek(time){
 		this.check_destroyed();
 		this.start_silence_frames();
