@@ -4,4 +4,5 @@ proto/build
 src/Error.js
 src/Request.js
 src/Track.js
+src/VoiceConnection.js
 *.d.ts
