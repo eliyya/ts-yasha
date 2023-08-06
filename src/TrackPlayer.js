@@ -293,7 +293,7 @@ class TrackPlayer extends EventEmitter{
 			}
 		}
 
-		this.player.setOutput(2, 48000, 256000);
+		this.player.setOutput(2, 48000, 320000);
 
 		if(start_time)
 			this.player.seek(start_time);
