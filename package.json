@@ -5,7 +5,7 @@
 	"version": "3.1.0",
 	"dependencies": {
 		"@discordjs/voice": "github:davidzeng0/voice#dist",
-		"discord.js": "^14.11.0",
+		"discord.js": "14.12.1",
 		"google-protobuf": "^3.21.2",
 		"js-common": "github:davidzeng0/js-common#dist",
 		"node-fetch": "^2.6.6",
@@ -17,14 +17,14 @@
 		"proto:ts": "mkdir -p proto/build; protoc --proto_path=proto --ts_out=proto/build --ts_opt=target=node youtube.proto",
 		"prepare": "npm run proto:ts && npm run build:ts",
 		"build": "npm run proto:ts && npm run build:ts",
-		"build:ts": "npx tsc -t esnext -m nodenext --strict --noImplicitOverride --skipLibCheck -d src/Error.ts src/Request.ts",
+		"build:ts": "npx tsc -t esnext -m nodenext --strict --noImplicitOverride --skipLibCheck -d src/Error.ts src/Request.ts src/Track.ts",
 		"git-publish": "git-publish -b dist"
 	},
 	"devDependencies": {
 		"git-publish": "^2.0.0",
-		"@types/google-protobuf": "^3.15.6",
-		"ts-standard": "^12.0.2",
-		"typescript": "^5.1.6"
+		"@types/google-protobuf": "3.15.6",
+		"ts-standard": "12.0.2",
+		"typescript": "5.1.6"
 	},
 	"files": [
 		"src",

@@ -3,4 +3,5 @@ lib
 proto/build
 src/Error.js
 src/Request.js
+src/Track.js
 *.d.ts
