@@ -14,17 +14,43 @@
 	},
 	"scripts": {
 		"proto": "mkdir -p build; protoc --proto_path=proto --js_out=import_style=commonjs,binary:build youtube.proto",
-		"prepare": "npm run proto",
-		"build": "npm run proto",
+		"proto:ts": "mkdir -p proto/build; protoc --proto_path=proto --ts_out=proto/build --ts_opt=target=node youtube.proto",
+		"prepare": "npm run proto:ts && npm run build:ts",
+		"build": "npm run proto:ts && npm run build:ts",
+		"build:ts": "npx tsc -t esnext -m nodenext --strict --noImplicitOverride --skipLibCheck src/Error.ts",
 		"git-publish": "git-publish -b dist"
 	},
 	"devDependencies": {
-		"git-publish": "^2.0.0"
+		"git-publish": "^2.0.0",
+		"@types/google-protobuf": "^3.15.6",
+		"ts-standard": "^12.0.2",
+		"typescript": "^5.1.6"
 	},
 	"files": [
 		"src",
 		"build",
 		"proto",
 		"index.d.ts"
-	]
+	],
+	"eslintConfig": {
+		"extends": "./node_modules/ts-standard/eslintrc.json",
+		"parserOptions": {
+			"project": "./tsconfig.json"
+		},
+		"rules": {
+			"@typescript-eslint/indent": [
+				"error",
+				4
+			],
+			"@typescript-eslint/strict-boolean-expressions": "off",
+			"@typescript-eslint/comma-dangle": [
+				"error",
+				"always-multiline"
+			]
+		},
+		"ignorePatterns": [
+			"proto/build",
+			"*.js"
+		]
+	}
 }

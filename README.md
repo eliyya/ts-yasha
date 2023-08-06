@@ -8,6 +8,7 @@ Only compiles on Linux or WSL2+.
 
 1. Install [sange](https://github.com/davidzeng0/sange) dependencies
 2. libsodium
+3. protoc-gen-ts
 
 ### Install
 ```bash
@@ -16,6 +17,7 @@ apt install libsodium-dev
 
 # Arch dependencies
 yay -Sy cmake
+npm i -g protoc-gen-ts
 
 # install
 npm i github:davidzeng0/yasha#dist

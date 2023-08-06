@@ -1,3 +1,4 @@
 node_modules
 lib
-src/proto/build
+proto/build
+src/Error.js
