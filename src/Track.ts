@@ -89,7 +89,7 @@ class Track {
         this.duration = -1
     }
 
-    setOwner (name: string, icons: TrackImage[]) {
+    setOwner (name: string, icons?: TrackImage[]) {
         this.author = name
         this.icons = icons
 
@@ -135,7 +135,7 @@ class Track {
 }
 
 class TrackResults extends Array<Track> {
-    async next () {
+    async next (): Promise<any> {
         return null
     }
 }
@@ -161,7 +161,7 @@ class TrackPlaylist extends TrackResults {
     async load () {
         let result
 
-        result = await this.next() as any
+        result = await this.next()
 
         while (result?.length) {
             this.push(...result)
@@ -178,7 +178,7 @@ class TrackPlaylist extends TrackResults {
         return this
     }
 
-    get url () {
+    get url (): any {
         return null
     }
 }

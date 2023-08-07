@@ -17,7 +17,7 @@
 		"proto:ts": "mkdir -p proto/build; protoc --proto_path=proto --ts_out=proto/build --ts_opt=target=node youtube.proto",
 		"prepare": "npm run proto:ts && npm run build:ts",
 		"build": "npm run proto:ts && npm run build:ts",
-		"build:ts": "npx tsc -t esnext -m nodenext --strict --noImplicitOverride --skipLibCheck -d src/Error.ts src/Request.ts src/Track.ts src/VoiceConnection.ts index.ts api.ts src/api/File.ts",
+		"build:ts": "npx tsc -t esnext -m nodenext --strict --noImplicitOverride --skipLibCheck -d src/Error.ts src/Request.ts src/Track.ts src/VoiceConnection.ts index.ts api.ts src/api/File.ts src/api/Youtube.ts",
 		"git-publish": "git-publish -b dist"
 	},
 	"devDependencies": {
@@ -44,6 +44,7 @@
 			],
 			"@typescript-eslint/strict-boolean-expressions": "off",
 			"@typescript-eslint/explicit-function-return-type": "off",
+			"@typescript-eslint/restrict-plus-operands": "off",
 			"@typescript-eslint/comma-dangle": [
 				"error",
 				"always-multiline"

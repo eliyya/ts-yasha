@@ -7,4 +7,5 @@ src/Request.js
 src/Track.js
 src/VoiceConnection.js
 src/api/File.js
+src/api/Youtube.js
 *.d.ts
