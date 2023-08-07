@@ -8,4 +8,5 @@ src/Track.js
 src/VoiceConnection.js
 src/api/File.js
 src/api/Youtube.js
+src/api/Spotify.js
 *.d.ts
