@@ -1,6 +1,7 @@
 node_modules
 lib
 proto/build
+index.js
 src/Error.js
 src/Request.js
 src/Track.js
