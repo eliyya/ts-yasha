@@ -343,4 +343,4 @@ class Source {
     }
 };
 
-module.exports = Source
+export default Source

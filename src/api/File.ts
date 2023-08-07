@@ -3,11 +3,11 @@ import { UnplayableError } from '../Error.js'
 import { UnsupportedError } from 'js-common'
 
 class FileStream extends TrackStream {
-    is_file: boolean = false
+    isFile: boolean = false
     constructor (url: string, isfile?: boolean) {
         super(url)
 
-        this.is_file = !!isfile
+        this.isFile = !!isfile
         this.setTracks(true, true) /* we don't know what kind of tracks are in this file */
     }
 

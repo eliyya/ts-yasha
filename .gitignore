@@ -1,12 +1,11 @@
 node_modules
 lib
-proto/build
 index.js
-src/Error.js
-src/Request.js
-src/Track.js
-src/VoiceConnection.js
+api.js
+src/*.js
 src/api/File.js
 src/api/Youtube.js
 src/api/Spotify.js
+proto/*.js
+proto/build
 *.d.ts

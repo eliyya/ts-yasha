@@ -7,10 +7,17 @@
             "@/*": ["/src/*"],
             "@proto": ["/proto/*"],
         },
+        "declaration": true,
         "removeComments": true,
         "forceConsistentCasingInFileNames": true,
         "strict": true,
         "skipLibCheck": true,
         "noImplicitOverride": true
-    }
+    },
+    "exclude": [
+        "node_modules",
+        "src/api/AppleMusic.js",
+        "src/api/Spotify.js",
+        "src/api/Soundcloud.js",
+    ]
 }
