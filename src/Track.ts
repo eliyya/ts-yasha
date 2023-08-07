@@ -117,15 +117,15 @@ class Track {
         return this
     }
 
-    async fetch () {
+    async fetch (): Promise<any> {
         return null
     }
 
-    async getStreams () {
+    async getStreams (): Promise<any> {
         return null
     }
 
-    get url () {
+    get url (): any {
         return null
     }
 
@@ -202,6 +202,7 @@ class TrackImage {
 }
 
 export {
+    Track,
     TrackImage,
     TrackStream,
     TrackResults,

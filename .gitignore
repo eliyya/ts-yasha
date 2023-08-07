@@ -6,4 +6,5 @@ src/Error.js
 src/Request.js
 src/Track.js
 src/VoiceConnection.js
+src/api/File.js
 *.d.ts
