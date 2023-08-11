@@ -238,7 +238,11 @@ class TrackPlayer extends EventEmitter{
 			streams = this.track.streams;
 		else{
 			try{
-				streams = await this.track.getStreams();
+				streams = await this.track.getStreams?.();
+				if (!streams) {
+					this.emit('error', new UnplayableError('No streams found'));
+					return false;
+				}
 			}catch(error){
 				if(this.play_id == play_id)
 					this.emit('error', error);
