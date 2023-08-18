@@ -1,76 +1,17 @@
 import { NotATrackError } from './Error.js'
+import { Youtube as YoutubeAPI, Soundcloud as SoundcloudAPI, Spotify as SpotifyAPI, AppleMusic as AppleMusicAPI, File as FileAPI } from '../api.js'
 
-class APISource {
-    name: string
-    api: any
-    Track: any
-    Results: any
-    Playlist: any
+const youtube = new class Youtube {
+    id_regex = /^([\w_-]{11})$/
+    platform = 'Youtube'
+    api = YoutubeAPI
 
-    constructor (api: string) {
-        this.name = api
-        this.api = require('./api/' + api)
-
-        this.Track = this.api.Track
-        this.Results = this.api.Results
-        this.Playlist = this.api.Playlist
-    }
-
-    match (_content: any): any {
-        return null
-    }
-
-    weak_match (_content: string | null): any {
-        return null
-    }
-
-    matches (content: any) {
-        return !!this.match(content)
-    }
-
-    async resolve (_match: any) {
-        return null
-    }
-
-    async get (id: any) {
-        return this.api.get(id)
-    }
-
-    async getStreams (id: any) {
-        return this.api.get_streams(id)
-    }
-
-    async search (query: any, _?: any, __?: any): Promise<any> {
-        return null
-    }
-
-    async playlistOnce (id: any, _?: any, __?: any): Promise<any> {
-        return null
-    }
-
-    async playlist (id: any, length: any) {
-        return this.api.playlist(id, length)
-    }
-}
-
-const youtube = new class Youtube extends APISource {
-    Music: any
-    id_regex: RegExp
-
-    constructor () {
-        super('Youtube')
-
-        this.Music = this.api.Music
-
-        this.id_regex = /^([\w_-]{11})$/
-    }
-
-    override weak_match (id: string) {
+    weak_match (id: string) {
         if (this.id_regex.exec(id)) { return { id } }
         return null
     }
 
-    override match (content: string | URL) {
+    match (content: string | URL) {
         let url
 
         try {
@@ -95,7 +36,7 @@ const youtube = new class Youtube extends APISource {
         return match
     }
 
-    override async resolve (match: { soundcloud: string, shortlink?: undefined } | { shortlink: string, soundcloud?: undefined } | { track: string, playlist?: undefined, album?: undefined } | { playlist: string, track?: undefined, album?: undefined } | { album: string, track?: undefined, playlist?: undefined } | { id: any }) {
+    async resolve (match: { soundcloud: string, shortlink?: undefined } | { shortlink: string, soundcloud?: undefined } | { track: string, playlist?: undefined, album?: undefined } | { playlist: string, track?: undefined, album?: undefined } | { album: string, track?: undefined, playlist?: undefined } | { id: any }) {
         let track = null; let list = null
 
         // @ts-expect-error
@@ -127,12 +68,12 @@ const youtube = new class Youtube extends APISource {
         }
     }
 
-    override async search (query: any, continuation: any, _?: any) {
-        return this.api.search(query, continuation)
+    async search (query: any, continuation: any, _?: any) {
+        return await this.api.search(query, continuation)
     }
 
-    override async playlistOnce (id: any, start: any, _?: any) {
-        return this.api.playlist_once(id, start)
+    async playlistOnce (id: any, start: any, _?: any) {
+        return await this.api.playlist_once(id, start)
     }
 
     setCookie (cookie: any) {
@@ -140,12 +81,11 @@ const youtube = new class Youtube extends APISource {
     }
 }()
 
-const soundcloud = new class Soundcloud extends APISource {
-    constructor () {
-        super('Soundcloud')
-    }
+const soundcloud = new class Soundcloud {
+    platform = 'Soundcloud'
+    api = SoundcloudAPI
 
-    override match (content: string | URL) {
+    match (content: string | URL) {
         let url
 
         try {
@@ -161,33 +101,32 @@ const soundcloud = new class Soundcloud extends APISource {
         return null
     }
 
-    override async resolve (match: { soundcloud: string, shortlink?: undefined } | { shortlink: string, soundcloud?: undefined } | { track: string, playlist?: undefined, album?: undefined } | { playlist: string, track?: undefined, album?: undefined } | { album: string, track?: undefined, playlist?: undefined } | { id: any }) {
+    async resolve (match: { soundcloud: string, shortlink?: undefined } | { shortlink: string, soundcloud?: undefined } | { track: string, playlist?: undefined, album?: undefined } | { playlist: string, track?: undefined, album?: undefined } | { album: string, track?: undefined, playlist?: undefined } | { id: any }) {
         try {
             // @ts-expect-error
-            if (match.shortlink) { return this.api.resolve_shortlink(match.shortlink) }
+            if (match.shortlink) { return await this.api.resolve_shortlink(match.shortlink) }
             // @ts-expect-error
-            return this.api.resolve(match.soundcloud)
+            return await this.api.resolve(match.soundcloud)
         } catch (e) {
             if (e instanceof NotATrackError) { return null }
             throw e
         }
     }
 
-    override async search (query: any, offset: any, length: any) {
-        return this.api.search(query, offset, length)
+    async search (query: any, offset: any, length: any) {
+        return await this.api.search(query, offset, length)
     }
 
-    override async playlistOnce (id: any, offset: any, length: any) {
-        return this.api.playlist_once(id, offset, length)
+    async playlistOnce (id: any, offset: any, length: any) {
+        return await this.api.playlist_once(id, offset, length)
     }
 }()
 
-const spotify = new class Spotify extends APISource {
-    constructor () {
-        super('Spotify')
-    }
+const spotify = new class Spotify {
+    platform = 'Spotify'
+    api = SpotifyAPI
 
-    override match (content: string | URL) {
+    match (content: string | URL) {
         let url
 
         try {
@@ -213,25 +152,25 @@ const spotify = new class Spotify extends APISource {
         return null
     }
 
-    override async resolve (match: { soundcloud: string, shortlink?: undefined } | { shortlink: string, soundcloud?: undefined } | { track: string, playlist?: undefined, album?: undefined } | { playlist: string, track?: undefined, album?: undefined } | { album: string, track?: undefined, playlist?: undefined } | { id: any }) {
+    async resolve (match: { soundcloud: string, shortlink?: undefined } | { shortlink: string, soundcloud?: undefined } | { track: string, playlist?: undefined, album?: undefined } | { playlist: string, track?: undefined, album?: undefined } | { album: string, track?: undefined, playlist?: undefined } | { id: any }) {
         // @ts-expect-error
-        if (match.track) { return this.api.get(match.track) }
+        if (match.track) { return await this.api.get(match.track) }
         // @ts-expect-error
-        if (match.playlist) { return this.api.playlist_once(match.playlist) }
+        if (match.playlist) { return await this.api.playlist_once(match.playlist) }
         // @ts-expect-error
-        if (match.album) { return this.api.album_once(match.album) }
+        if (match.album) { return await this.api.album_once(match.album) }
     }
 
-    override async search (query: any, offset: any, length: any) {
-        return this.api.search(query, offset, length)
+    async search (query: any, offset: any, length: any) {
+        return await this.api.search(query, offset, length)
     }
 
-    override async playlistOnce (id: any, offset: any, length: any) {
-        return this.api.playlist_once(id, offset, length)
+    async playlistOnce (id: any, offset: any, length: any) {
+        return await this.api.playlist_once(id, offset, length)
     }
 
     async albumOnce (id: any, offset: any, length: any) {
-        return this.api.album_once(id, offset, length)
+        return await this.api.album_once(id, offset, length)
     }
 
     setCookie (cookie: any) {
@@ -239,12 +178,11 @@ const spotify = new class Spotify extends APISource {
     }
 }()
 
-const apple = new class AppleMusic extends APISource {
-    constructor () {
-        super('AppleMusic')
-    }
+const apple = new class AppleMusic {
+    api = AppleMusicAPI
+    platform = 'AppleMusic'
 
-    override match (content: string | URL | undefined) {
+    match (content: string | URL | undefined) {
         let url
 
         try {
@@ -276,38 +214,37 @@ const apple = new class AppleMusic extends APISource {
         return null
     }
 
-    override async resolve (match: { soundcloud: string, shortlink?: undefined } | { shortlink: string, soundcloud?: undefined } | { track: string, playlist?: undefined, album?: undefined } | { playlist: string, track?: undefined, album?: undefined } | { album: string, track?: undefined, playlist?: undefined } | { id: any }) {
+    async resolve (match: { soundcloud: string, shortlink?: undefined } | { shortlink: string, soundcloud?: undefined } | { track: string, playlist?: undefined, album?: undefined } | { playlist: string, track?: undefined, album?: undefined } | { album: string, track?: undefined, playlist?: undefined } | { id: any }) {
         // @ts-expect-error
-        if (match.track) { return this.api.get(match.track) }
+        if (match.track) { return await this.api.get(match.track) }
         // @ts-expect-error
-        if (match.playlist) { return this.api.playlist_once(match.playlist) }
+        if (match.playlist) { return await this.api.playlist_once(match.playlist) }
         // @ts-expect-error
-        if (match.album) { return this.api.album_once(match.album) }
+        if (match.album) { return await this.api.album_once(match.album) }
     }
 
-    override async search (query: any, offset: any, length: any) {
-        return this.api.search(query, offset, length)
+    async search (query: any, offset: any, length: any) {
+        return await this.api.search(query, offset, length)
     }
 
-    override async playlistOnce (id: any, offset: any, length: any) {
-        return this.api.playlist_once(id, offset, length)
+    async playlistOnce (id: any, offset: any, length: any) {
+        return await this.api.playlist_once(id, offset, length)
     }
 
     async albumOnce (id: any, offset: any, length: any) {
-        return this.api.album_once(id, offset, length)
+        return await this.api.album_once(id, offset, length)
     }
 }()
 
-const file = new class File extends APISource {
-    constructor () {
-        super('File')
-    }
+const file = new class File {
+    api = FileAPI
+    platform = 'File'
 
-    override resolve (content: string | URL | undefined) {
+    async resolve (content: string) {
         let url
 
         try {
-            url = new URL(content as string)
+            url = new URL(content)
         } catch (e) {
             return null
         }
