@@ -160,6 +160,7 @@ export class YoutubeResults extends TrackResults {
 }
 
 export class YoutubePlaylist extends TrackPlaylist {
+    declare platform: 'Youtube'
     id?: string
     next_offset?: number
     declare firstTrack?: YoutubeTrack

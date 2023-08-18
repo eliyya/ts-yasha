@@ -7,6 +7,7 @@ import { InternalError, NetworkError, NotFoundError, ParseError } from 'js-commo
 export class AppleMusicTrack extends Track {
     artists?: string[]
     explicit?: boolean
+    declare platform: 'AppleMusic'
     constructor () {
         super('AppleMusic')
     }
@@ -60,6 +61,7 @@ export class AppleMusicResults extends TrackResults {
 }
 
 export class AppleMusicPlaylist extends TrackPlaylist {
+    declare platform: 'AppleMusic'
     type?: string
     id?: string
     start?: number

@@ -100,6 +100,7 @@ export class SoundcloudResults extends TrackResults {
 }
 
 export class SoundcloudPlaylist extends TrackPlaylist {
+    declare platform: 'Soundcloud'
     permalink_url?: string
     id?: string
     start?: number

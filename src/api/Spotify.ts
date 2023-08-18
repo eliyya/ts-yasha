@@ -49,6 +49,7 @@ export class SpotifyResults extends TrackResults {
 }
 
 export class SpotifyPlaylist extends TrackPlaylist {
+    declare platform: 'Spotify'
     type?: string
     id?: string
     start?: number
