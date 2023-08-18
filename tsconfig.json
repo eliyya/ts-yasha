@@ -17,7 +17,6 @@
     "exclude": [
         "node_modules",
         "src/api/AppleMusic.js",
-        "src/api/Spotify.js",
         "src/api/Soundcloud.js",
     ]
 }

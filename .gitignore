@@ -3,9 +3,7 @@ lib
 index.js
 api.js
 src/*.js
-src/api/File.js
-src/api/Youtube.js
-src/api/Spotify.js
+src/**/*.js
 proto/*.js
 proto/build
 *.d.ts
