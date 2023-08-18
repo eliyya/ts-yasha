@@ -1,9 +1,4 @@
 node_modules
-lib
-index.js
-api.js
-src/*.js
-src/**/*.js
-proto/*.js
-proto/build
+*.js
 *.d.ts
+proto/build
