@@ -238,6 +238,74 @@ export class YoutubeStreams extends TrackStreams {
     }
 }
 
+export class YoutubeMusic {
+    innertube_client: {
+        clientName: string
+        clientVersion: string
+        gl: string
+        hl: string
+    }
+
+    innertube_key: string
+    constructor () {
+        this.innertube_client = {
+            clientName: 'WEB_REMIX',
+            clientVersion: '1.20220328.01.00',
+            gl: 'US',
+            hl: 'en',
+        }
+
+        this.innertube_key = 'AIzaSyC9XL3ZjWddXya6X74dJoCTL-WEYFDNX30'
+    }
+
+    get cookie () {
+        return api.cookie
+    }
+
+    get sapisid () {
+        return api.sapisid
+    }
+
+    async api_request (path: string, body?: { [key: string]: any }, query?: string) {
+        return await api.api_request.call(this, path, body, query, 'music')
+    }
+
+    async search (search: string | null, continuation: string | null, params?: string) {
+        let query, body
+
+        if (continuation) { query = '&continuation=' + continuation + '&type=next' } else { body = { query: search, params } }
+        body = await this.api_request('search', body, query)
+
+        if (continuation) {
+            if (!body.continuationContents) { throw new NotFoundError('Search continuation token not found') }
+            try {
+                body = body.continuationContents.musicShelfContinuation
+            } catch (e) {
+                throw new InternalError(e)
+            }
+        } else {
+            try {
+                body = body.contents.tabbedSearchResultsRenderer.tabs[0].tabRenderer.content.sectionListRenderer.contents
+            } catch (e) {
+                throw new InternalError(e)
+            }
+
+            if (params) { body = getProperty(body, 'musicShelfRenderer') }
+        }
+
+        const results = new YoutubeMusicResults()
+
+        try {
+            results.process(body)
+        } catch (e) {
+            throw new InternalError(e)
+        }
+
+        return results
+    }
+}
+const music = new YoutubeMusic()
+
 /* api requests and headers to youtube.com */
 export class YoutubeAPI {
     innertube_client: {
@@ -785,73 +853,5 @@ export class YoutubeMusicResults extends TrackResults {
         return null
     }
 }
-
-export class YoutubeMusic {
-    innertube_client: {
-        clientName: string
-        clientVersion: string
-        gl: string
-        hl: string
-    }
-
-    innertube_key: string
-    constructor () {
-        this.innertube_client = {
-            clientName: 'WEB_REMIX',
-            clientVersion: '1.20220328.01.00',
-            gl: 'US',
-            hl: 'en',
-        }
-
-        this.innertube_key = 'AIzaSyC9XL3ZjWddXya6X74dJoCTL-WEYFDNX30'
-    }
-
-    get cookie () {
-        return api.cookie
-    }
-
-    get sapisid () {
-        return api.sapisid
-    }
-
-    async api_request (path: string, body?: { [key: string]: any }, query?: string) {
-        return await api.api_request.call(this, path, body, query, 'music')
-    }
-
-    async search (search: string | null, continuation: string | null, params?: string) {
-        let query, body
-
-        if (continuation) { query = '&continuation=' + continuation + '&type=next' } else { body = { query: search, params } }
-        body = await this.api_request('search', body, query)
-
-        if (continuation) {
-            if (!body.continuationContents) { throw new NotFoundError('Search continuation token not found') }
-            try {
-                body = body.continuationContents.musicShelfContinuation
-            } catch (e) {
-                throw new InternalError(e)
-            }
-        } else {
-            try {
-                body = body.contents.tabbedSearchResultsRenderer.tabs[0].tabRenderer.content.sectionListRenderer.contents
-            } catch (e) {
-                throw new InternalError(e)
-            }
-
-            if (params) { body = getProperty(body, 'musicShelfRenderer') }
-        }
-
-        const results = new YoutubeMusicResults()
-
-        try {
-            results.process(body)
-        } catch (e) {
-            throw new InternalError(e)
-        }
-
-        return results
-    }
-}
-const music = new YoutubeMusic()
 
 export default api
