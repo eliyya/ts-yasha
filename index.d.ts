@@ -47,14 +47,14 @@ declare class TrackStream{
 	getUrl?: () => Promise<string>;
 }
 
-declare class TrackStreams extends Array{
+declare class TrackStreams extends Array<TrackStream>{
 	volume: number;
 	live: boolean;
 
 	expired(): boolean;
 }
 
-declare class TrackResults extends Array{
+declare class TrackResults extends Array<Track>{
 	next(): Promise<TrackResults | null>;
 }
 
