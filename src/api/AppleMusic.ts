@@ -4,7 +4,7 @@ import Youtube from './Youtube.js'
 import { Track, TrackImage, TrackResults, TrackPlaylist } from '../Track.js'
 import { InternalError, NetworkError, NotFoundError, ParseError } from 'js-common'
 
-class AppleMusicTrack extends Track {
+export class AppleMusicTrack extends Track {
     artists?: string[]
     explicit?: boolean
     constructor () {
@@ -45,7 +45,7 @@ class AppleMusicTrack extends Track {
     }
 }
 
-class AppleMusicResults extends TrackResults {
+export class AppleMusicResults extends TrackResults {
     query?: string
     start?: number
     set_continuation (query: string, start: number) {
@@ -59,7 +59,7 @@ class AppleMusicResults extends TrackResults {
     }
 }
 
-class AppleMusicPlaylist extends TrackPlaylist {
+export class AppleMusicPlaylist extends TrackPlaylist {
     type?: string
     id?: string
     start?: number
@@ -83,7 +83,7 @@ class AppleMusicPlaylist extends TrackPlaylist {
     }
 }
 
-class AppleMusicAPI {
+export class AppleMusicAPI {
     token: string | null
     reloading: Promise<void> | null
     needs_reload: boolean

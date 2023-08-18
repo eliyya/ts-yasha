@@ -1,7 +1,11 @@
 import { NotATrackError } from './Error.js'
 import { Youtube as YoutubeAPI, Soundcloud as SoundcloudAPI, Spotify as SpotifyAPI, AppleMusic as AppleMusicAPI, File as FileAPI } from '../api.js'
+import { type YoutubeTrack, YoutubePlaylist } from './api/Youtube.js'
+import { type SoundcloudTrack, SoundcloudPlaylist } from './api/Soundcloud.js'
+import { type SpotifyTrack, SpotifyPlaylist } from './api/Spotify.js'
+import { type AppleMusicTrack, AppleMusicPlaylist } from './api/AppleMusic.js'
 
-const youtube = new class Youtube {
+class YoutubeSource {
     id_regex = /^([\w_-]{11})$/
     platform = 'Youtube'
     api = YoutubeAPI
@@ -79,9 +83,9 @@ const youtube = new class Youtube {
     setCookie (cookie: any) {
         this.api.set_cookie(cookie)
     }
-}()
+}
 
-const soundcloud = new class Soundcloud {
+class SoundcloudSource {
     platform = 'Soundcloud'
     api = SoundcloudAPI
 
@@ -120,9 +124,9 @@ const soundcloud = new class Soundcloud {
     async playlistOnce (id: any, offset: any, length: any) {
         return await this.api.playlist_once(id, offset, length)
     }
-}()
+}
 
-const spotify = new class Spotify {
+class SpotifySource {
     platform = 'Spotify'
     api = SpotifyAPI
 
@@ -176,9 +180,9 @@ const spotify = new class Spotify {
     setCookie (cookie: any) {
         this.api.set_cookie(cookie)
     }
-}()
+}
 
-const apple = new class AppleMusic {
+class AppleMusicSource {
     api = AppleMusicAPI
     platform = 'AppleMusic'
 
@@ -234,9 +238,9 @@ const apple = new class AppleMusic {
     async albumOnce (id: any, offset: any, length: any) {
         return await this.api.album_once(id, offset, length)
     }
-}()
+}
 
-const file = new class File {
+class FileSource {
     api = FileAPI
     platform = 'File'
 
@@ -253,7 +257,13 @@ const file = new class File {
         if (url.protocol === 'file:') { return this.api.create(content, true) }
         return null
     }
-}()
+}
+
+const youtube = new YoutubeSource()
+const soundcloud = new SoundcloudSource()
+const spotify = new SpotifySource()
+const apple = new AppleMusicSource()
+const file = new FileSource()
 
 // eslint-disable-next-line @typescript-eslint/no-extraneous-class
 class Source {
@@ -262,13 +272,13 @@ class Source {
     static Spotify = spotify
     static AppleMusic = apple
     static File = file
-    static resolve (input: string | null, weak = true) {
+    static async resolve (input: string | null, weak = true): Promise<null | YoutubeTrack | YoutubePlaylist | SoundcloudTrack | SoundcloudPlaylist | SpotifyTrack | SpotifyPlaylist | AppleMusicTrack | AppleMusicPlaylist> {
         const sources = [youtube, soundcloud, spotify, apple]
         let match
 
         for (const source of sources) {
             // eslint-disable-next-line no-cond-assign
-            if (match = source.match(input as string)) { return source.resolve(match) }
+            if (match = source.match(input as string)) { return await source.resolve(match) }
         }
         if (!weak) { return null }
         for (const source of sources) {

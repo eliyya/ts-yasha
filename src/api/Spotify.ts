@@ -4,7 +4,7 @@ import Youtube from './Youtube.js'
 import { Track, TrackImage, TrackResults, TrackPlaylist } from '../Track.js'
 import { InternalError, ParseError, NetworkError, NotFoundError } from 'js-common'
 
-class SpotifyTrack extends Track {
+export class SpotifyTrack extends Track {
     declare platform: 'Spotify'
     artists?: string[]
     explicit?: boolean
@@ -34,7 +34,7 @@ class SpotifyTrack extends Track {
     }
 }
 
-class SpotifyResults extends TrackResults {
+export class SpotifyResults extends TrackResults {
     query?: string
     start?: number
     set_continuation (query: string, start: number) {
@@ -48,7 +48,7 @@ class SpotifyResults extends TrackResults {
     }
 }
 
-class SpotifyPlaylist extends TrackPlaylist {
+export class SpotifyPlaylist extends TrackPlaylist {
     type?: string
     id?: string
     start?: number
@@ -73,7 +73,7 @@ class SpotifyPlaylist extends TrackPlaylist {
     }
 }
 
-class SpotifyAPI {
+export class SpotifyAPI {
     token: string | null
     reloading: Promise<void> | null
     needs_reload: boolean

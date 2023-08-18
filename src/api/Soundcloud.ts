@@ -4,7 +4,7 @@ import { Track, TrackImage, TrackResults, TrackPlaylist, TrackStream, TrackStrea
 import { UnplayableError, NotATrackError } from '../Error.js'
 import { InternalError, NetworkError, NotFoundError, ParseError } from 'js-common'
 
-class SoundcloudTrack extends Track {
+export class SoundcloudTrack extends Track {
     declare platform: 'Soundcloud'
     permalink_url?: string
     constructor () {
@@ -86,7 +86,7 @@ class SoundcloudTrack extends Track {
     }
 }
 
-class SoundcloudResults extends TrackResults {
+export class SoundcloudResults extends TrackResults {
     query?: string
     start?: number
     set_continuation (query: string, start: number) {
@@ -99,7 +99,7 @@ class SoundcloudResults extends TrackResults {
     }
 }
 
-class SoundcloudPlaylist extends TrackPlaylist {
+export class SoundcloudPlaylist extends TrackPlaylist {
     permalink_url?: string
     id?: string
     start?: number
@@ -125,7 +125,7 @@ class SoundcloudPlaylist extends TrackPlaylist {
     }
 }
 
-class SoundcloudStream extends TrackStream {
+export class SoundcloudStream extends TrackStream {
     stream_url: string
     constructor (url: string) {
         super(url)
@@ -141,7 +141,7 @@ class SoundcloudStream extends TrackStream {
     }
 }
 
-class SoundcloudStreams extends TrackStreams {
+export class SoundcloudStreams extends TrackStreams {
     from (track: { permalink_url?: any, user?: { username: string, avatar_url: any }, id?: string, title?: string, duration?: number, media?: any }) {
         if (track.media?.transcodings) {
             this.set(1, false, Date.now())
@@ -175,7 +175,7 @@ class SoundcloudStreams extends TrackStreams {
     }
 }
 
-class SoundcloudAPI {
+export class SoundcloudAPI {
     client_id: string
 
     Track = SoundcloudTrack
