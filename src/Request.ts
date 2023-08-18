@@ -5,14 +5,14 @@ import nfetch, { RequestInfo, RequestInit } from 'node-fetch'
 
 const httpsAgent = new Agent({ keepAlive: true })
 
-async function fetch (url: RequestInfo, opts: RequestInit | undefined = {}) {
+async function fetch (url: RequestInfo, opts: RequestInit = {}) {
     opts.agent = httpsAgent
 
     return await nfetch(url, opts)
 }
 
 export default new class {
-    async getResponse (url: RequestInfo, options: RequestInit | undefined) {
+    async getResponse (url: RequestInfo, options?: RequestInit) {
         try {
             const res = await fetch(url, options)
             return { res }
@@ -21,7 +21,7 @@ export default new class {
         }
     }
 
-    async get (url: RequestInfo, options: RequestInit | undefined) {
+    async get (url: RequestInfo, options?: RequestInit) {
         const { res } = await this.getResponse(url, options)
 
         let body
@@ -37,7 +37,7 @@ export default new class {
         return { res, body }
     }
 
-    async getJSON (url: RequestInfo, options: RequestInit | undefined) {
+    async getJSON (url: RequestInfo, options?: RequestInit) {
         const data = await this.get(url, options)
 
         try {
@@ -48,7 +48,7 @@ export default new class {
         }
     }
 
-    async getBuffer (url: RequestInfo, options: RequestInit | undefined) {
+    async getBuffer (url: RequestInfo, options?: RequestInit) {
         const { res } = await this.getResponse(url, options)
 
         let body

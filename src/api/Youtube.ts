@@ -75,6 +75,7 @@ function youtubeThumbnails (videoId: string) {
 }
 
 export class YoutubeTrack extends Track {
+    declare platform: 'Youtube'
     explicit = false
     constructor () {
         super('Youtube')
@@ -251,8 +252,8 @@ export class YoutubeAPI {
     sapisid: string
     Music = music
     Track = YoutubeTrack
-    YoutubePlaylist = YoutubePlaylist
     YoutubeResults = YoutubeResults
+    YoutubePlaylist = YoutubePlaylist
 
     constructor () {
         this.innertube_client = {
@@ -852,10 +853,5 @@ export class YoutubeMusic {
     }
 }
 const music = new YoutubeMusic()
-
-api.Music = music
-api.Track = YoutubeTrack
-api.YoutubeResults = YoutubeResults
-api.YoutubePlaylist = YoutubePlaylist
 
 export default api

@@ -25,6 +25,7 @@ class FileStreams extends TrackStreams {
 }
 
 class FileTrack extends Track {
+    declare platform: 'File'
     stream_url: string
     isLocalFile: boolean
     constructor (url: string, isfile = false) {
@@ -50,6 +51,7 @@ class FileTrack extends Track {
 }
 
 class File {
+    Track = FileTrack
     async get (_url: string) {
         throw new UnsupportedError()
     }
@@ -68,6 +70,3 @@ class File {
 }
 
 export default new File()
-export {
-    Track as FileTrack,
-}
