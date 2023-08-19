@@ -2,7 +2,7 @@ import { Track, TrackStream, TrackStreams } from '../Track.js'
 import { UnplayableError } from '../Error.js'
 import { UnsupportedError } from 'js-common'
 
-class FileStream extends TrackStream {
+export class FileStream extends TrackStream {
     isFile: boolean = false
     constructor (url: string, isfile?: boolean) {
         super(url)
@@ -16,7 +16,7 @@ class FileStream extends TrackStream {
     }
 }
 
-class FileStreams extends TrackStreams {
+export class FileStreams extends TrackStreams {
     from (url: string, isfile?: boolean) {
         this.push(new FileStream(url, isfile))
 
@@ -24,7 +24,7 @@ class FileStreams extends TrackStreams {
     }
 }
 
-class FileTrack extends Track {
+export class FileTrack extends Track {
     declare platform: 'File'
     stream_url: string
     isLocalFile: boolean
@@ -37,15 +37,15 @@ class FileTrack extends Track {
         this.setStreams(new FileStreams().from(url, isfile))
     }
 
-    override async getStreams () {
+    async getStreams () {
         throw new UnplayableError({ simpleMessage: 'Stream expired or not available' })
     }
 
-    override async fetch () {
+    async fetch () {
         throw new UnsupportedError('Cannot fetch on a FileTrack')
     }
 
-    override get url () {
+    get url () {
         return this.stream_url
     }
 }

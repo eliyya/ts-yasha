@@ -8,7 +8,11 @@ import sodium from 'sodium'
 import { UnsupportedError, GenericError, InternalError } from 'js-common'
 import { UnplayableError } from './Error.js'
 import { VoiceConnectionStatus } from '@discordjs/voice'
-import { Track } from './Track.js'
+import { YoutubeTrack } from './api/Youtube.js'
+import { SpotifyTrack } from './api/Spotify.js'
+import { SoundcloudTrack } from './api/Soundcloud.js'
+import { AppleMusicTrack } from './api/AppleMusic.js'
+import { FileTrack } from './api/File.js'
 
 const RANDOM_BYTES = Buffer.alloc(24)
 const CONNECTION_NONCE = Buffer.alloc(24)
@@ -47,12 +51,13 @@ class Subscription {
     }
 }
 
+export type trackTypes = YoutubeTrack | SpotifyTrack | SoundcloudTrack | AppleMusicTrack | FileTrack
 class TrackPlayer extends EventEmitter {
     normalize_volume = false
     external_encrypt = false
     external_packet_send = false
     last_error = 0
-    track?: Track
+    track?: trackTypes
     stream?: any
     subscriptions: Subscription[] = []
     play_id = 0
@@ -454,7 +459,7 @@ class TrackPlayer extends EventEmitter {
         return result
     }
 
-    play (track: Track) {
+    play (track: trackTypes) {
         this.play_id++
         this.last_error = 0
 
