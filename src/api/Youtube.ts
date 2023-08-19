@@ -121,15 +121,15 @@ export class YoutubeTrack extends Track {
         ).setPlayable(!!track.isPlayable)
     }
 
-    override async fetch () {
+    async fetch () {
         return await api.get(this.id as string)
     }
 
-    override async getStreams () {
+    async getStreams () {
         return await api.get_streams(this.id as string)
     }
 
-    override get url () {
+    get url () {
         return 'https://www.youtube.com/watch?v=' + this.id
     }
 }

@@ -21,15 +21,15 @@ export class SpotifyTrack extends Track {
         return this
     }
 
-    override async fetch () {
+    async fetch () {
         return await api.get(this.id ?? '')
     }
 
-    override async getStreams () {
+    async getStreams () {
         return await Youtube.track_match(this)
     }
 
-    override get url () {
+    get url () {
         return 'https://open.spotify.com/track/' + this.id
     }
 }

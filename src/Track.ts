@@ -73,20 +73,18 @@ class TrackStreams extends Array {
 }
 
 class Track {
-    platform?: string
+    platform: string
     id?: string
     title?: string
     author?: string
     icons?: TrackImage[]
     thumbnails?: TrackImage[]
     streams?: TrackStreams
-    playable?: boolean
-    duration?: number
+    playable = true
+    duration = -1
 
     constructor (platform: string) {
         this.platform = platform
-        this.playable = true
-        this.duration = -1
     }
 
     setOwner (name: string, icons?: TrackImage[]) {
@@ -115,18 +113,6 @@ class Track {
         this.playable = playable
 
         return this
-    }
-
-    async fetch (): Promise<any> {
-        return null
-    }
-
-    async getStreams (): Promise<any> {
-        return null
-    }
-
-    get url (): any {
-        return null
     }
 
     equals (other: Track | undefined) {

@@ -73,15 +73,15 @@ export class SoundcloudTrack extends Track {
         return thumbnails
     }
 
-    override async fetch () {
+    async fetch () {
         return await api.get(this.id ?? '')
     }
 
-    override async getStreams () {
+    async getStreams () {
         return await api.get_streams(this.id ?? '')
     }
 
-    override get url () {
+    get url () {
         return this.permalink_url
     }
 }
